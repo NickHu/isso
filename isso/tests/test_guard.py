@@ -35,7 +35,7 @@ class TestGuard(unittest.TestCase):
     def setUp(self):
         self.path = tempfile.NamedTemporaryFile().name
 
-    def makeClient(self, ip, ratelimit=2, direct_reply=3, self_reply=False):
+    def makeClient(self, ip, ratelimit=2, direct_reply=3, self_reply=False, self_email=False):
 
         conf = config.load(os.path.join(dist.location, "share", "isso.conf"))
         conf.set("general", "dbpath", self.path)
@@ -44,6 +44,7 @@ class TestGuard(unittest.TestCase):
         conf.set("guard", "ratelimit", str(ratelimit))
         conf.set("guard", "direct-reply", str(direct_reply))
         conf.set("guard", "reply-to-self", "1" if self_reply else "0")
+        conf.set("guard", "require-email", "1" if self_email else "0")
 
         class App(Isso, core.Mixin):
             pass
@@ -113,3 +114,8 @@ class TestGuard(unittest.TestCase):
         self.assertEqual(client.post("/new?uri=test", data=self.data).status_code, 201)
         self.assertEqual(client.post("/new?uri=test", data=payload(1)).status_code, 201)
         self.assertEqual(client.post("/new?uri=test", data=payload(2)).status_code, 201)
+
+    def testRequireEmail(self):
+
+        #TODO
+        pass

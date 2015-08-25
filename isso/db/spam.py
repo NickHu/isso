@@ -49,6 +49,7 @@ class Guard:
             if len(rv) >= self.conf.getint("direct-reply"):
                 return False, "%i direct responses to %s" % (len(rv), uri)
 
+        # block replies to self unless :param:`reply-to-self` is enabled
         elif self.conf.getboolean("reply-to-self") == False:
             rv = self.db.execute([
                 'SELECT id FROM comments WHERE'
@@ -60,6 +61,17 @@ class Guard:
 
             if len(rv) > 0:
                 return False, "edit time frame is still open"
+
+        # require email if :param:`require-email` is enabled
+        if self.conf.getboolean("require-email") == True:
+            rv = self.db.execute([
+                'SELECT id FROM comments WHERE'
+                '    remote_addr = ?',
+                'AND email = ?;'
+            ], (comment["remote_addr"], None)).fetchall()
+
+            if len(rv) > 0:
+                return False, "email address required but not provided"
 
         return True, ""
 
